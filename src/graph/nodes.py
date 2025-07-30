@@ -34,6 +34,60 @@ from ..config import SELECTED_SEARCH_ENGINE, SearchEngine
 logger = logging.getLogger(__name__)
 
 
+def _truncate_completed_steps_info(completed_steps, max_chars=32000):
+    """
+    Truncate completed steps information to prevent token limit issues.
+
+    Args:
+        completed_steps: List of completed steps
+        max_chars: Maximum number of characters to include
+
+    Returns:
+        Truncated completed steps info string
+    """
+    if not completed_steps:
+        return ""
+
+    completed_steps_info = "# Completed Research Steps\n\n"
+    current_length = len(completed_steps_info)
+
+    # Start from the most recent steps and work backwards
+    included_steps = []
+    for i in range(len(completed_steps) - 1, -1, -1):
+        step = completed_steps[i]
+        step_content = f"## Completed Step {i + 1}: {step.title}\n\n"
+
+        # Truncate the execution result if it's too long
+        execution_res = step.execution_res or ""
+        if len(execution_res) > 32000:  # Limit each step result to 2000 chars
+            execution_res = execution_res[:31000] + "...\n[Content truncated due to length]"
+
+        step_content += f"<finding>\n{execution_res}\n</finding>\n\n"
+
+        # Check if adding this step would exceed the limit
+        if current_length + len(step_content) > max_chars:
+            if not included_steps:  # If we can't even include one step
+                # Include a truncated version of the most recent step
+                truncated_res = execution_res[:max_chars - current_length - 200] + "...\n[Content truncated due to length]"
+                step_content = f"## Completed Step {len(completed_steps)}: {step.title}\n\n<finding>\n{truncated_res}\n</finding>\n\n"
+                included_steps.append(step_content)
+            break
+
+        included_steps.append(step_content)
+        current_length += len(step_content)
+
+    # Reverse to get chronological order
+    included_steps.reverse()
+
+    # Add a note if we truncated some steps
+    if len(included_steps) < len(completed_steps):
+        truncated_count = len(completed_steps) - len(included_steps)
+        completed_steps_info += f"*[Note: {truncated_count} earlier step(s) omitted due to length constraints]*\n\n"
+
+    completed_steps_info += "".join(included_steps)
+    return completed_steps_info
+
+
 @tool
 def handoff_to_planner(
     research_topic: Annotated[str, "The topic of the research task to be handed off."],
@@ -326,22 +380,20 @@ async def _execute_agent_step(
 
     logger.info(f"Executing step: {current_step.title}, agent: {agent_name}")
 
-    # Format completed steps information
-    completed_steps_info = ""
-    if completed_steps:
-        completed_steps_info = "# Completed Research Steps\n\n"
-        for i, step in enumerate(completed_steps):
-            completed_steps_info += f"## Completed Step {i + 1}: {step.title}\n\n"
-            completed_steps_info += f"<finding>\n{step.execution_res}\n</finding>\n\n"
+    # Format completed steps information with length limits to prevent token overflow
+    completed_steps_info = _truncate_completed_steps_info(completed_steps)
 
     # Prepare the input for the agent with completed steps info
+    main_content = f"# Research Topic\n\n{plan_title}\n\n{completed_steps_info}# Current Step\n\n## Title\n\n{current_step.title}\n\n## Description\n\n{current_step.description}\n\n## Locale\n\n{state.get('locale', 'en-US')}"
+
     agent_input = {
         "messages": [
-            HumanMessage(
-                content=f"# Research Topic\n\n{plan_title}\n\n{completed_steps_info}# Current Step\n\n## Title\n\n{current_step.title}\n\n## Description\n\n{current_step.description}\n\n## Locale\n\n{state.get('locale', 'en-US')}"
-            )
+            HumanMessage(content=main_content)
         ]
     }
+
+    # Log message length for monitoring
+    logger.info(f"Main message length: {len(main_content)} characters, completed steps: {len(completed_steps)}")
 
     # Add citation reminder for researcher agent
     if agent_name == "researcher":
@@ -387,6 +439,14 @@ async def _execute_agent_step(
             f"Using default value {default_recursion_limit}."
         )
         recursion_limit = default_recursion_limit
+
+    # Calculate total message length for monitoring
+    total_message_length = sum(len(msg.content) for msg in agent_input["messages"])
+    logger.info(f"Total message length: {total_message_length} characters, message count: {len(agent_input['messages'])}")
+
+    # Warn if message is getting large (approaching token limits)
+    if total_message_length > 15000:  # Rough estimate for token limits
+        logger.warning(f"Message length ({total_message_length} chars) is approaching token limits. Consider further truncation.")
 
     logger.info(f"Agent input: {agent_input}")
     result = await agent.ainvoke(
