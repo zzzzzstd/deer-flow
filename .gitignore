@@ -26,3 +26,7 @@ conf.yaml
 # coverage report
 coverage.xml
 coverage/
+.repomix/
+repomix-*.txt
+logs
+.env.swp
