@@ -8,6 +8,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Suspense } from "react";
+import { FileText } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 
@@ -33,6 +34,13 @@ export default function HomePage() {
       <header className="fixed top-0 left-0 flex h-12 w-full items-center justify-between px-4">
         <Logo />
         <div className="flex items-center">
+          <Tooltip title="编辑器演示">
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/editor-demo">
+                <FileText className="h-4 w-4" />
+              </Link>
+            </Button>
+          </Tooltip>
           <Tooltip title={t("starOnGitHub")}>
             <Button variant="ghost" size="icon" asChild>
               <Link
