@@ -85,7 +85,7 @@ function AISelectorCommands({ onSelect, selectedText, hasSelection }: AISelector
                 onClick={() => onSelect(command, selectedText)}
                 className="w-full flex items-center gap-3 px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
-                <command.icon className="h-4 w-4 text-purple-500 flex-shrink-0" />
+                <command.icon className="h-4 w-4 text-purple-500 shrink-0" />
                 <span>{command.label}</span>
               </button>
             ))}
@@ -103,7 +103,7 @@ function AISelectorCommands({ onSelect, selectedText, hasSelection }: AISelector
             onClick={() => onSelect(command, selectedText)}
             className="w-full flex items-center gap-3 px-4 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
-            <command.icon className="h-4 w-4 text-purple-500 flex-shrink-0" />
+            <command.icon className="h-4 w-4 text-purple-500 shrink-0" />
             <span>{command.label}</span>
           </button>
         ))}
@@ -262,7 +262,7 @@ export function AISelector({ editor, open, onOpenChange }: AISelectorProps) {
                     ? "告诉AI接下来要做什么"
                     : "让AI编辑或生成内容..."
                 }
-                className="w-full pr-10 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                className="w-full pr-10 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded focus:outline-hidden focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
                 autoFocus
               />
               <Button
@@ -307,7 +307,7 @@ export function AISelector({ editor, open, onOpenChange }: AISelectorProps) {
                   onClick={() => setShowInput(true)}
                   className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <ArrowUp className="h-4 w-4 text-purple-500 flex-shrink-0" />
+                  <ArrowUp className="h-4 w-4 text-purple-500 shrink-0" />
                   <span>自定义指令...</span>
                 </button>
               </div>

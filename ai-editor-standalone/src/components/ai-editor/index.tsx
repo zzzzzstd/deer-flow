@@ -263,7 +263,7 @@ function AIEditorInternal({
                   handleDrop: (view, event, _slice, moved) =>
                     handleImageDrop(view, event, moved, uploadFn),
                   attributes: {
-                    class: "prose prose-base dark:prose-invert max-w-none p-4 focus:outline-none min-h-full",
+                    class: "prose prose-base dark:prose-invert max-w-none p-4 focus:outline-hidden min-h-full",
                     "data-placeholder": placeholder,
                   },
                 }}
