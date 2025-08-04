@@ -2,12 +2,9 @@
 
 import { useState } from 'react'
 import { AIEditor } from '@/components/ai-editor'
-import { Button } from "@/components/ui/button"
-import { Eye, Edit, Code } from "lucide-react"
 
 export default function Home() {
   const [markdown, setMarkdown] = useState<string>('')
-  const [mode, setMode] = useState<"edit" | "preview" | "split">("edit")
 
   return (
     <main className="container mx-auto p-8 max-w-6xl">
@@ -19,58 +16,121 @@ export default function Home() {
       </div>
 
       {/* 编辑器主体 */}
-      <div className="h-[600px] flex flex-col border rounded-lg overflow-hidden bg-white dark:bg-gray-900">
-        {/* 工具栏 */}
-        <div className="flex items-center justify-between p-4 border-b bg-gray-50 dark:bg-gray-800">
-          <div className="flex items-center space-x-2">
-            <h2 className="text-lg font-semibold">编辑器</h2>
-          </div>
-          <div className="flex items-center space-x-1">
-            <Button
-              variant={mode === "edit" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setMode("edit")}
-            >
-              <Edit className="w-4 h-4 mr-1" /> 编辑
-            </Button>
-            <Button
-              variant={mode === "preview" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setMode("preview")}
-            >
-              <Eye className="w-4 h-4 mr-1" /> 预览
-            </Button>
-            <Button
-              variant={mode === "split" ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setMode("split")}
-            >
-              <Code className="w-4 h-4 mr-1" /> 分割
-            </Button>
-          </div>
-        </div>
-
-        {/* 编辑器和预览区域 */}
-        <div className="flex-1 flex">
-          {(mode === "edit" || mode === "split") && (
-            <div className={`${mode === "split" ? "w-1/2" : "w-full"} flex flex-col`}>
-              <AIEditor
-                placeholder="开始写作..."
-                onMarkdownChange={setMarkdown}
-                className="flex-1 border-none"
-              />
-            </div>
-          )}
-          {(mode === "preview" || mode === "split") && (
-            <div className={`${mode === "split" ? "w-1/2 border-l" : "w-full"} p-4 overflow-auto bg-gray-50 dark:bg-gray-800`}>
-              <div className="prose prose-sm max-w-none dark:prose-invert">
-                <pre className="text-sm whitespace-pre-wrap bg-white dark:bg-gray-900 p-4 rounded border">
-                  {markdown || '开始编辑以查看Markdown输出...'}
-                </pre>
-              </div>
-            </div>
-          )}
-        </div>
+      <div className="h-[600px] border rounded-lg overflow-hidden bg-white dark:bg-gray-900">
+        <AIEditor
+          initialContent={{
+            type: "doc",
+            content: [
+              {
+                type: "heading",
+                attrs: { level: 1 },
+                content: [{ type: "text", text: "🎉 欢迎使用 AI Editor" }]
+              },
+              {
+                type: "paragraph",
+                content: [
+                  { type: "text", text: "这是一个功能完整的 AI 编辑器，基于 " },
+                  { type: "text", text: "Novel + TipTap + ProseMirror", marks: [{ type: "bold" }] },
+                  { type: "text", text: " 技术栈构建。" }
+                ]
+              },
+              {
+                type: "heading",
+                attrs: { level: 2 },
+                content: [{ type: "text", text: "🚀 快速开始" }]
+              },
+              {
+                type: "bulletList",
+                content: [
+                  {
+                    type: "listItem",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          { type: "text", text: "选中这段文字，然后点击工具栏中的 " },
+                          { type: "text", text: "AI", marks: [{ type: "bold" }] },
+                          { type: "text", text: " 按钮体验 AI 功能" }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    type: "listItem",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          { type: "text", text: "按 " },
+                          { type: "text", text: "Ctrl+K", marks: [{ type: "code" }] },
+                          { type: "text", text: " 快捷键打开 AI 助手" }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    type: "listItem",
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [
+                          { type: "text", text: "输入 " },
+                          { type: "text", text: "/", marks: [{ type: "code" }] },
+                          { type: "text", text: " 打开 Slash 命令菜单" }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                type: "heading",
+                attrs: { level: 2 },
+                content: [{ type: "text", text: "✨ 试试这些功能" }]
+              },
+              {
+                type: "taskList",
+                content: [
+                  {
+                    type: "taskItem",
+                    attrs: { checked: false },
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "拖拽图片到编辑器中" }]
+                      }
+                    ]
+                  },
+                  {
+                    type: "taskItem",
+                    attrs: { checked: false },
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "使用 AI 功能改进文字" }]
+                      }
+                    ]
+                  },
+                  {
+                    type: "taskItem",
+                    attrs: { checked: true },
+                    content: [
+                      {
+                        type: "paragraph",
+                        content: [{ type: "text", text: "体验 Slash 命令" }]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }}
+          placeholder="开始写作，体验AI功能..."
+          onMarkdownChange={setMarkdown}
+          showToolbar={true}
+          defaultMode="edit"
+          className="h-full"
+        />
       </div>
 
       {/* 使用说明 */}
