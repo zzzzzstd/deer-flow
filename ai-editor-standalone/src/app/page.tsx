@@ -130,6 +130,10 @@ export default function Home() {
           showToolbar={true}
           defaultMode="edit"
           className="h-full"
+          aiConfig={{
+            baseUrl: process.env.NEXT_PUBLIC_AI_BACKEND_URL || 'http://localhost:8000',
+            timeout: 30000,
+          }}
         />
       </div>
 

@@ -9,6 +9,7 @@ import {
   Quote,
   Code,
   CheckSquare,
+  Table,
 } from "lucide-react"
 import { createSuggestionItems, Command, renderItems } from "novel"
 
@@ -116,6 +117,20 @@ export const suggestionItems = createSuggestionItems([
     icon: <CheckSquare size={18} />,
     command: ({ editor, range }) => {
       editor.chain().focus().deleteRange(range).toggleTaskList().run()
+    },
+  },
+  {
+    title: "表格",
+    description: "插入一个3x3的表格",
+    searchTerms: ["table", "grid", "表格", "网格"],
+    icon: <Table size={18} />,
+    command: ({ editor, range }) => {
+      editor
+        .chain()
+        .focus()
+        .deleteRange(range)
+        .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+        .run()
     },
   },
 ])

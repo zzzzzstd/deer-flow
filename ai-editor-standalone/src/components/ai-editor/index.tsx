@@ -16,14 +16,18 @@ import {
   handleImagePaste,
 } from "novel"
 import { useDebouncedCallback } from "use-debounce"
+import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { Eye, Edit, Download } from "lucide-react"
+import { Eye, Edit, Download, Sparkles } from "lucide-react"
 
 // 导入我们的扩展和组件
 import { aiEditorExtensions, uploadFn } from "./extensions"
 import { AIToolbar } from "./ai-toolbar"
 import { AIAssistant } from "./ai-assistant"
 import { suggestionItems } from "./slash-command"
+import { useAI } from "@/hooks/use-ai"
+import { configureAI } from "@/lib/ai-api"
+import { getAIConfig } from "@/config/ai-config"
 import "./ai-editor.css"
 
 interface AIEditorProps {
@@ -34,6 +38,11 @@ interface AIEditorProps {
   onMarkdownChange?: (markdown: string) => void
   showToolbar?: boolean
   defaultMode?: "edit" | "preview"
+  // AI 配置
+  aiConfig?: {
+    baseUrl?: string
+    timeout?: number
+  }
 }
 
 // 内部编辑器组件，不使用SSR
@@ -45,16 +54,43 @@ function AIEditorInternal({
   onMarkdownChange,
   showToolbar = true,
   defaultMode = "edit",
+  aiConfig,
 }: AIEditorProps) {
+  // 配置AI
+  useEffect(() => {
+    // 使用环境配置作为基础
+    const envConfig = getAIConfig()
+    const finalConfig = {
+      baseUrl: aiConfig?.baseUrl || envConfig.backendUrl,
+      timeout: aiConfig?.timeout || envConfig.timeout,
+    }
+
+    configureAI(finalConfig)
+  }, [aiConfig])
+
   // 编辑器状态
   const [editor, setEditor] = useState<EditorInstance | null>(null)
   const [isAIOpen, setIsAIOpen] = useState(false)
   const [selectedText, setSelectedText] = useState("")
-  const [aiSuggestion, setAISuggestion] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
   const [mode, setMode] = useState<"edit" | "preview">(defaultMode)
   const [markdown, setMarkdown] = useState("")
   const [content, setContent] = useState<JSONContent | undefined>(initialContent)
+
+  // AI Hook
+  const {
+    isLoading,
+    completion: aiSuggestion,
+    executeCommand,
+    reset: resetAI,
+    error: aiError
+  } = useAI({
+    onError: (error) => {
+      console.error("AI 生成失败:", error)
+    },
+    onComplete: (result) => {
+      console.log("AI 生成完成:", result)
+    }
+  })
 
   // 防抖更新函数
   const debouncedUpdate = useDebouncedCallback((editor: EditorInstance) => {
@@ -81,44 +117,31 @@ function AIEditorInternal({
     setIsAIOpen(true)
   }, [editor])
 
-  // 模拟 AI 生成文本
-  const generateAIText = useCallback(async (prompt: string) => {
-    setIsLoading(true)
-    setAISuggestion("")
-
+  // AI 生成文本
+  const generateAIText = useCallback(async (prompt: string, context?: string) => {
     try {
-      // 模拟 API 调用延迟
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // 重置之前的结果
+      resetAI()
 
-      // 根据提示词生成不同的响应
-      let response = ""
-      if (prompt.includes("改进")) {
-        response = "这是一个改进后的文本版本，更加清晰和有说服力。"
-      } else if (prompt.includes("扩展")) {
-        response = "经过优化的内容，增加了更多细节和具体例子。"
-      } else if (prompt.includes("总结")) {
-        response = "重新组织的段落结构，逻辑更加清晰。"
-      } else if (prompt.includes("修正")) {
-        response = "修正了语法问题，表达更加准确。"
-      } else {
-        // 默认响应
-        const responses = [
-          "这是一个改进后的文本版本，更加清晰和有说服力。",
-          "经过优化的内容，增加了更多细节和具体例子。",
-          "重新组织的段落结构，逻辑更加清晰。",
-          "修正了语法问题，表达更加准确。"
-        ]
-        response = responses[Math.floor(Math.random() * responses.length)]
-      }
-
-      setAISuggestion(response)
+      // 使用自定义命令执行AI生成
+      await executeCommand(
+        {
+          id: 'custom',
+          type: 'custom',
+          label: '自定义生成',
+          description: '自定义AI生成',
+          icon: Sparkles,
+          prompt: prompt,
+          requiresSelection: false,
+          category: 'generate',
+        },
+        context,
+        prompt
+      )
     } catch (error) {
       console.error("AI 生成失败:", error)
-      setAISuggestion("抱歉，AI 生成失败，请稍后重试。")
-    } finally {
-      setIsLoading(false)
     }
-  }, [])
+  }, [executeCommand, resetAI])
 
   // 插入 AI 生成的文本
   const insertAIText = useCallback((text: string) => {
@@ -126,8 +149,8 @@ function AIEditorInternal({
 
     editor.chain().focus().insertContent(text).run()
     setIsAIOpen(false)
-    setAISuggestion("")
-  }, [editor])
+    resetAI()
+  }, [editor, resetAI])
 
   // 替换选中的文本
   const replaceSelectedText = useCallback((text: string) => {
@@ -136,8 +159,8 @@ function AIEditorInternal({
     const { selection } = editor.state
     editor.chain().focus().deleteRange({ from: selection.from, to: selection.to }).insertContent(text).run()
     setIsAIOpen(false)
-    setAISuggestion("")
-  }, [editor])
+    resetAI()
+  }, [editor, resetAI])
 
   // 导出Markdown文件
   const exportMarkdown = useCallback(() => {
@@ -172,7 +195,12 @@ function AIEditorInternal({
   }, [handleAIClick])
 
   return (
-    <div className={`ai-editor-container h-full flex flex-col ${className}`}>
+    <motion.div
+      className={`ai-editor-container h-full flex flex-col ${className}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       {/* 工具栏 */}
       {showToolbar && (
         <div className="flex items-center justify-between p-4 border-b bg-gray-50 dark:bg-gray-800">
@@ -209,9 +237,17 @@ function AIEditorInternal({
 
       {/* 编辑器和预览区域 */}
       <div className="flex-1 overflow-hidden">
-        {/* 编辑器区域 */}
-        {mode === "edit" && (
-          <div className="w-full h-full">
+        <AnimatePresence mode="wait">
+          {/* 编辑器区域 */}
+          {mode === "edit" && (
+            <motion.div
+              key="editor"
+              className="w-full h-full"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              transition={{ duration: 0.2 }}
+            >
             <EditorRoot>
               <EditorContent
                 immediatelyRender={false}
@@ -276,35 +312,45 @@ function AIEditorInternal({
                 <ImageResizer />
               </EditorContent>
             </EditorRoot>
-          </div>
-        )}
+            </motion.div>
+          )}
 
-        {/* Markdown输出区域 */}
-        {mode === "preview" && (
-          <div className="w-full h-full p-4 bg-gray-50 dark:bg-gray-800">
+          {/* Markdown输出区域 */}
+          {mode === "preview" && (
+            <motion.div
+              key="preview"
+              className="w-full h-full p-4 bg-gray-50 dark:bg-gray-800"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+            >
             <div className="bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-4 h-full flex flex-col">
               <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Markdown 输出</h3>
               <pre className="text-sm whitespace-pre-wrap font-mono text-gray-800 dark:text-gray-200 flex-1 overflow-auto">
                 {markdown || '开始编辑以查看Markdown输出...'}
               </pre>
             </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* AI 助手面板 */}
-      {isAIOpen && (
-        <AIAssistant
-          selectedText={selectedText}
-          suggestion={aiSuggestion}
-          isLoading={isLoading}
-          onGenerate={generateAIText}
-          onInsert={insertAIText}
-          onReplace={replaceSelectedText}
-          onClose={() => setIsAIOpen(false)}
-        />
-      )}
-    </div>
+      {/* AI 助手面板 - 现在通过AI工具栏中的选择器提供 */}
+      <AnimatePresence>
+        {isAIOpen && (
+          <AIAssistant
+            selectedText={selectedText}
+            suggestion={aiSuggestion}
+            isLoading={isLoading}
+            onGenerate={generateAIText}
+            onInsert={insertAIText}
+            onReplace={replaceSelectedText}
+            onClose={() => setIsAIOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
   )
 }
 

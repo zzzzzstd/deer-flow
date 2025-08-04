@@ -14,6 +14,10 @@ import {
 } from "novel"
 import { Markdown } from "tiptap-markdown"
 import { Extension } from "@tiptap/react"
+import { Table } from "@tiptap/extension-table"
+import { TableHeader } from "@tiptap/extension-table-header"
+import { TableRow } from "@tiptap/extension-table-row"
+import { TableCell } from "@tiptap/extension-table-cell"
 import { slashCommand } from "./slash-command"
 import { uploadFn } from "./image-upload"
 
@@ -153,6 +157,17 @@ const markdown = Markdown.configure({
   breaks: false,
 })
 
+// 配置表格支持
+const table = Table.configure({
+  resizable: true,
+})
+
+const tableRow = TableRow.configure()
+
+const tableCell = TableCell.configure()
+
+const tableHeader = TableHeader.configure()
+
 // 导出所有扩展
 export const aiEditorExtensions = [
   starterKit,
@@ -163,6 +178,10 @@ export const aiEditorExtensions = [
   TextStyle,
   Color,
   markdown,
+  table,
+  tableRow,
+  tableCell,
+  tableHeader,
   AICommandExtension,
   slashCommand,
   taskList,
@@ -177,6 +196,10 @@ export const EXTENSION_NAMES = {
   SLASH_COMMAND: "slashCommand",
   HIGHLIGHT: "highlight",
   MARKDOWN: "markdown",
+  TABLE: "table",
+  TABLE_ROW: "tableRow",
+  TABLE_CELL: "tableCell",
+  TABLE_HEADER: "tableHeader",
   TASK_LIST: "taskList",
   TASK_ITEM: "taskItem",
   IMAGE: "image",

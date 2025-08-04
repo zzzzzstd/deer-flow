@@ -1,17 +1,17 @@
 "use client"
 
 import { useState } from "react"
-import { 
-  X, 
-  Sparkles, 
-  RefreshCw, 
-  Check, 
+import { motion, AnimatePresence } from "framer-motion"
+import {
+  X,
+  Sparkles,
+  RefreshCw,
+  Check,
   Copy,
   Loader2,
-  Wand2,
-  Edit3,
   Plus,
 } from "lucide-react"
+import { QUICK_AI_PROMPTS } from "@/lib/ai-commands"
 
 interface AIAssistantProps {
   selectedText: string
@@ -23,12 +23,7 @@ interface AIAssistantProps {
   onClose: () => void
 }
 
-const AI_PROMPTS = [
-  { label: "改进文字", prompt: "请帮我改进这段文字，让它更清晰、更有说服力", icon: <Edit3 className="h-4 w-4" /> },
-  { label: "扩展内容", prompt: "请帮我扩展这段内容，添加更多细节和例子", icon: <Plus className="h-4 w-4" /> },
-  { label: "总结要点", prompt: "请帮我总结这段文字的核心要点", icon: <Wand2 className="h-4 w-4" /> },
-  { label: "修正语法", prompt: "请帮我检查并修正这段文字的语法和表达", icon: <Check className="h-4 w-4" /> },
-]
+// 使用统一的AI命令定义
 
 export function AIAssistant({
   selectedText,
@@ -68,8 +63,20 @@ export function AIAssistant({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl max-h-[80vh] overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700">
+    <motion.div
+      className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <motion.div
+        className="w-full max-w-2xl max-h-[80vh] overflow-hidden bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700"
+        initial={{ scale: 0.95, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 20 }}
+        transition={{ duration: 0.2 }}
+      >
         <div className="flex flex-row items-center justify-between space-y-0 p-6 pb-4">
           <div>
             <h3 className="flex items-center space-x-2 text-lg font-semibold">
@@ -111,14 +118,14 @@ export function AIAssistant({
           <div className="space-y-2">
             <h4 className="text-sm font-medium">快速操作</h4>
             <div className="grid grid-cols-2 gap-2">
-              {AI_PROMPTS.map((prompt, index) => (
+              {QUICK_AI_PROMPTS.map((prompt, index) => (
                 <button
                   key={index}
                   onClick={() => handleQuickPrompt(prompt.prompt)}
                   disabled={isLoading || !selectedText}
                   className="flex items-center justify-start p-2 text-sm border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {prompt.icon}
+                  <prompt.icon className="h-4 w-4" />
                   <span className="ml-2">{prompt.label}</span>
                 </button>
               ))}
@@ -223,7 +230,7 @@ export function AIAssistant({
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }

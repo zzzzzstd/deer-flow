@@ -138,6 +138,120 @@
   background: #f9fafb;
 }
 
+/* 表格样式 */
+.ai-editor-container .ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+.ai-editor-container .ProseMirror table td,
+.ai-editor-container .ProseMirror table th {
+  min-width: 1em;
+  border: 1px solid #e5e7eb;
+  padding: 8px 12px;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.ai-editor-container .ProseMirror table th {
+  font-weight: bold;
+  text-align: left;
+  background-color: #f9fafb;
+}
+
+.ai-editor-container .ProseMirror table .selectedCell:after {
+  z-index: 2;
+  position: absolute;
+  content: "";
+  left: 0; right: 0; top: 0; bottom: 0;
+  background: rgba(200, 200, 255, 0.4);
+  pointer-events: none;
+}
+
+.ai-editor-container .ProseMirror table .column-resize-handle {
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: -2px;
+  width: 4px;
+  background-color: #adf;
+  pointer-events: none;
+}
+
+.ai-editor-container .ProseMirror table p {
+  margin: 0;
+}
+
+/* 深色模式表格样式 */
+.dark .ai-editor-container .ProseMirror table td,
+.dark .ai-editor-container .ProseMirror table th {
+  border-color: #374151;
+}
+
+.dark .ai-editor-container .ProseMirror table th {
+  background-color: #1f2937;
+}
+
+/* 动画过渡效果 */
+.ai-editor-container {
+  transition: all 0.3s ease;
+}
+
+.ai-editor-container .ProseMirror {
+  transition: all 0.2s ease;
+}
+
+/* 工具栏按钮悬停效果 */
+.ai-toolbar-bubble button {
+  transition: all 0.15s ease;
+}
+
+.ai-toolbar-bubble button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 表格悬停效果 */
+.ai-editor-container .ProseMirror table td:hover,
+.ai-editor-container .ProseMirror table th:hover {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.dark .ai-editor-container .ProseMirror table td:hover,
+.dark .ai-editor-container .ProseMirror table th:hover {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* 改进的滚动条样式 */
+.ai-editor-container .ProseMirror::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ai-editor-container .ProseMirror::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ai-editor-container .ProseMirror::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+
+.ai-editor-container .ProseMirror::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+.dark .ai-editor-container .ProseMirror::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+.dark .ai-editor-container .ProseMirror::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
+}
+
 .dark .ai-editor-toolbar {
   border-bottom-color: #374151;
   background: #1f2937;

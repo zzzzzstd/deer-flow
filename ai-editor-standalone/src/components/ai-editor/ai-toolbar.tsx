@@ -10,8 +10,13 @@ import {
   Heading2,
   Sparkles,
   Loader2,
+  Table,
+  TableProperties,
+  Plus,
+  Minus,
 } from "lucide-react"
 import { EditorBubble, EditorBubbleItem, type EditorInstance } from "novel"
+import { Button } from "@/components/ui/button"
 
 interface AIToolbarProps {
   editor: EditorInstance | null
@@ -51,7 +56,7 @@ export function AIToolbar({ editor, onAIClick, isLoading }: AIToolbarProps) {
       }}
       className="ai-toolbar-bubble"
     >
-      <div className="flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
+      <div className="relative flex items-center bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden">
         {/* 核心文本格式化按钮 */}
         <EditorBubbleItem
           onSelect={(editor) => {
@@ -141,11 +146,73 @@ export function AIToolbar({ editor, onAIClick, isLoading }: AIToolbarProps) {
 
         <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
 
-        {/* AI 按钮 */}
-        <button
+        {/* 表格操作按钮 */}
+        <EditorBubbleItem
+          onSelect={(editor) => {
+            editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+          }}
+        >
+          <button
+            className={`px-2 py-1 text-sm rounded-none hover:bg-gray-100 dark:hover:bg-gray-700`}
+            title="插入表格"
+          >
+            <Table className="h-4 w-4" />
+          </button>
+        </EditorBubbleItem>
+
+        {/* 表格行列操作 - 仅在表格内显示 */}
+        {editor?.isActive("table") && (
+          <>
+            <EditorBubbleItem
+              onSelect={(editor) => {
+                editor.chain().focus().addRowBefore().run()
+              }}
+            >
+              <button
+                className="px-2 py-1 text-sm rounded-none hover:bg-gray-100 dark:hover:bg-gray-700"
+                title="在上方插入行"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            </EditorBubbleItem>
+
+            <EditorBubbleItem
+              onSelect={(editor) => {
+                editor.chain().focus().deleteRow().run()
+              }}
+            >
+              <button
+                className="px-2 py-1 text-sm rounded-none hover:bg-gray-100 dark:hover:bg-gray-700"
+                title="删除行"
+              >
+                <Minus className="h-4 w-4" />
+              </button>
+            </EditorBubbleItem>
+
+            <EditorBubbleItem
+              onSelect={(editor) => {
+                editor.chain().focus().addColumnBefore().run()
+              }}
+            >
+              <button
+                className="px-2 py-1 text-sm rounded-none hover:bg-gray-100 dark:hover:bg-gray-700"
+                title="在左侧插入列"
+              >
+                <TableProperties className="h-4 w-4" />
+              </button>
+            </EditorBubbleItem>
+          </>
+        )}
+
+        <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
+
+        {/* AI 按钮 - 参考web项目实现 */}
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onAIClick}
           disabled={isLoading}
-          className="px-2 py-1 text-sm rounded-none text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20 disabled:opacity-50"
+          className="rounded-none text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20"
         >
           {isLoading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -153,7 +220,7 @@ export function AIToolbar({ editor, onAIClick, isLoading }: AIToolbarProps) {
             <Sparkles className="h-4 w-4" />
           )}
           <span className="ml-1 text-xs">AI</span>
-        </button>
+        </Button>
       </div>
     </EditorBubble>
   )

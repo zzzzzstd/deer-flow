@@ -14,7 +14,9 @@
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "export": "next build && next export"
+    "export": "next build && next export",
+    "test:ai": "node scripts/test-ai.js",
+    "dev:setup": "./scripts/dev.sh"
   },
   "keywords": [
     "ai-editor",
@@ -30,10 +32,15 @@
   "dependencies": {
     "@radix-ui/react-separator": "^1.1.4",
     "@radix-ui/react-slot": "^1.2.0",
+    "@tiptap/extension-table": "^2.11.7",
+    "@tiptap/extension-table-cell": "^2.11.7",
+    "@tiptap/extension-table-header": "^2.11.7",
+    "@tiptap/extension-table-row": "^2.11.7",
     "@tiptap/react": "^2.11.7",
     "autoprefixer": "^10.4.21",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "framer-motion": "^12.23.12",
     "import": "^0.0.6",
     "lucide-react": "^0.487.0",
     "next": "^15.0.0",
@@ -54,7 +61,7 @@
     "eslint": "^8.45.0",
     "eslint-config-next": "^15.0.0",
     "postcss": "^8.4.0",
-    "tailwindcss": "^3.3.0",
+    "tailwindcss": "^3.4.0",
     "typescript": "^5.0.0"
   },
   "peerDependencies": {

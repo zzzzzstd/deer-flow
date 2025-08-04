@@ -32,3 +32,4 @@ logs
 .env.swp
 node_modules
 .next
+ai-editor-standalone/.env.local
