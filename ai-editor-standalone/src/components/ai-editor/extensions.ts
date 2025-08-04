@@ -13,7 +13,49 @@ import {
   TaskItem,
 } from "novel"
 import { Markdown } from "tiptap-markdown"
+import { Extension } from "@tiptap/react"
+import { slashCommand } from "./slash-command"
 import { uploadFn } from "./image-upload"
+
+// 自定义 AI 命令扩展
+const AICommandExtension = Extension.create({
+  name: "aiCommand",
+
+  addKeyboardShortcuts() {
+    return {
+      // Ctrl/Cmd + K 触发 AI 助手
+      "Mod-k": () => {
+        // 触发 AI 助手的逻辑将在组件中处理
+        const event = new CustomEvent("ai-assistant-trigger")
+        document.dispatchEvent(event)
+        return true
+      },
+      // Ctrl/Cmd + Shift + A 快速 AI 生成
+      "Mod-Shift-a": () => {
+        const event = new CustomEvent("ai-quick-generate")
+        document.dispatchEvent(event)
+        return true
+      },
+    }
+  },
+
+  addCommands() {
+    return {
+      // 添加 AI 高亮命令
+      setAIHighlight:
+        () =>
+        ({ commands }) => {
+          return commands.setHighlight({ color: "#3b82f6" })
+        },
+      // 移除 AI 高亮命令
+      unsetAIHighlight:
+        () =>
+        ({ commands }) => {
+          return commands.unsetHighlight()
+        },
+    }
+  },
+})
 
 // 基础扩展配置
 const starterKit = StarterKit.configure({
@@ -59,6 +101,7 @@ const link = TiptapLink.configure({
   HTMLAttributes: {
     class: "ai-editor-link",
   },
+  openOnClick: false,
 })
 
 // 高亮配置
@@ -77,6 +120,7 @@ const taskItem = TaskItem.configure({
   HTMLAttributes: {
     class: "ai-editor-task-item",
   },
+  nested: true,
 })
 
 // 图片配置
@@ -119,11 +163,25 @@ export const aiEditorExtensions = [
   TextStyle,
   Color,
   markdown,
+  AICommandExtension,
+  slashCommand,
   taskList,
   taskItem,
   tiptapImage,
   globalDragHandle,
 ]
+
+// 导出扩展名称，方便在组件中使用
+export const EXTENSION_NAMES = {
+  AI_COMMAND: "aiCommand",
+  SLASH_COMMAND: "slashCommand",
+  HIGHLIGHT: "highlight",
+  MARKDOWN: "markdown",
+  TASK_LIST: "taskList",
+  TASK_ITEM: "taskItem",
+  IMAGE: "image",
+  DRAG_HANDLE: "globalDragHandle",
+} as const
 
 // 导出图片上传函数
 export { uploadFn } from "./image-upload"

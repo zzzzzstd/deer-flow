@@ -107,3 +107,89 @@
 .ai-editor-link:hover {
   color: #1d4ed8;
 }
+
+/* 工具栏样式 */
+.ai-toolbar-bubble {
+  z-index: 50;
+}
+
+/* 拖拽手柄样式 */
+.drag-handle {
+  position: absolute;
+  left: -2rem;
+  top: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  cursor: grab;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.drag-handle:hover {
+  background: #e5e7eb;
+}
+
+.ProseMirror-focused .drag-handle {
+  opacity: 1;
+}
+
+/* 深色模式支持 */
+.dark .ai-editor-blockquote {
+  border-left-color: #374151;
+  color: #9ca3af;
+}
+
+.dark .ai-editor-code {
+  background-color: #374151;
+  color: #f9fafb;
+}
+
+.dark .ai-editor-image {
+  border-color: #374151;
+}
+
+.dark .ai-editor-image-uploading {
+  border-color: #374151;
+}
+
+.dark .drag-handle {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+.dark .drag-handle:hover {
+  background: #4b5563;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .ai-editor-container .ProseMirror {
+    padding: 0.75rem;
+  }
+}
+
+/* 动画效果 */
+.ai-editor-container * {
+  transition: all 0.2s ease-in-out;
+}
+
+/* 滚动条样式 */
+.ai-editor-container .ProseMirror::-webkit-scrollbar {
+  width: 8px;
+}
+
+.ai-editor-container .ProseMirror::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.ai-editor-container .ProseMirror::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.ai-editor-container .ProseMirror::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

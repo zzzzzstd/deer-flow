@@ -9,6 +9,7 @@ import {
   EditorCommandEmpty,
   EditorCommandItem,
   EditorCommandList,
+  ImageResizer,
   type EditorInstance,
   type JSONContent,
   handleCommandNavigation,
@@ -19,7 +20,10 @@ import { useDebouncedCallback } from "use-debounce"
 
 // 导入我们的扩展和组件
 import { aiEditorExtensions, uploadFn } from "./extensions"
+import { AIToolbar } from "./ai-toolbar"
+import { AIAssistant } from "./ai-assistant"
 import { suggestionItems } from "./slash-command"
+import "./ai-editor.css"
 
 interface AIEditorProps {
   initialContent?: JSONContent
@@ -37,7 +41,12 @@ function AIEditorInternal({
   onContentChange,
   onMarkdownChange,
 }: AIEditorProps) {
+  // 编辑器状态
   const [editor, setEditor] = useState<EditorInstance | null>(null)
+  const [isAIOpen, setIsAIOpen] = useState(false)
+  const [selectedText, setSelectedText] = useState("")
+  const [aiSuggestion, setAISuggestion] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
 
   // 防抖更新函数
   const debouncedUpdate = useDebouncedCallback((editor: EditorInstance) => {
@@ -49,6 +58,80 @@ function AIEditorInternal({
       onMarkdownChange(markdown)
     }
   }, 300)
+
+  // AI 功能处理函数
+  const handleAIClick = useCallback(() => {
+    if (!editor) return
+
+    const { selection } = editor.state
+    const selectedText = editor.state.doc.textBetween(selection.from, selection.to)
+
+    setSelectedText(selectedText)
+    setIsAIOpen(true)
+  }, [editor])
+
+  // 模拟 AI 生成文本
+  const generateAIText = useCallback(async (prompt: string) => {
+    setIsLoading(true)
+    setAISuggestion("")
+
+    try {
+      // 模拟 API 调用延迟
+      await new Promise(resolve => setTimeout(resolve, 1500))
+
+      // 模拟 AI 响应
+      const responses = [
+        "这是一个改进后的文本版本，更加清晰和有说服力。",
+        "经过优化的内容，增加了更多细节和具体例子。",
+        "重新组织的段落结构，逻辑更加清晰。",
+        "修正了语法问题，表达更加准确。"
+      ]
+
+      const randomResponse = responses[Math.floor(Math.random() * responses.length)]
+      setAISuggestion(randomResponse)
+    } catch (error) {
+      console.error("AI 生成失败:", error)
+      setAISuggestion("抱歉，AI 生成失败，请稍后重试。")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  // 插入 AI 生成的文本
+  const insertAIText = useCallback((text: string) => {
+    if (!editor) return
+
+    editor.chain().focus().insertContent(text).run()
+    setIsAIOpen(false)
+    setAISuggestion("")
+  }, [editor])
+
+  // 替换选中的文本
+  const replaceSelectedText = useCallback((text: string) => {
+    if (!editor) return
+
+    const { selection } = editor.state
+    editor.chain().focus().deleteRange({ from: selection.from, to: selection.to }).insertContent(text).run()
+    setIsAIOpen(false)
+    setAISuggestion("")
+  }, [editor])
+
+  // 监听键盘快捷键
+  useEffect(() => {
+    const handleKeyboardShortcuts = (event: CustomEvent) => {
+      if (event.type === "ai-assistant-trigger") {
+        handleAIClick()
+      }
+    }
+
+    document.addEventListener("ai-assistant-trigger", handleKeyboardShortcuts as EventListener)
+    document.addEventListener("ai-quick-generate", handleKeyboardShortcuts as EventListener)
+
+    return () => {
+      document.removeEventListener("ai-assistant-trigger", handleKeyboardShortcuts as EventListener)
+      document.removeEventListener("ai-quick-generate", handleKeyboardShortcuts as EventListener)
+    }
+  }, [handleAIClick])
 
   return (
     <div className={`ai-editor-container ${className}`}>
@@ -104,8 +187,31 @@ function AIEditorInternal({
               ))}
             </EditorCommandList>
           </EditorCommand>
+
+          {/* AI 工具栏 */}
+          <AIToolbar
+            editor={editor}
+            onAIClick={handleAIClick}
+            isLoading={isLoading}
+          />
+
+          {/* 图片调整器 */}
+          <ImageResizer />
         </EditorContent>
       </EditorRoot>
+
+      {/* AI 助手面板 */}
+      {isAIOpen && (
+        <AIAssistant
+          selectedText={selectedText}
+          suggestion={aiSuggestion}
+          isLoading={isLoading}
+          onGenerate={generateAIText}
+          onInsert={insertAIText}
+          onReplace={replaceSelectedText}
+          onClose={() => setIsAIOpen(false)}
+        />
+      )}
     </div>
   )
 }

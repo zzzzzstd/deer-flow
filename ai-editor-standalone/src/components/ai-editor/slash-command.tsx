@@ -10,7 +10,7 @@ import {
   Code,
   CheckSquare,
 } from "lucide-react"
-import { createSuggestionItems, Command } from "novel"
+import { createSuggestionItems, Command, renderItems } from "novel"
 
 export const suggestionItems = createSuggestionItems([
   {
@@ -123,5 +123,6 @@ export const suggestionItems = createSuggestionItems([
 export const slashCommand = Command.configure({
   suggestion: {
     items: () => suggestionItems,
+    render: renderItems,
   },
 })
